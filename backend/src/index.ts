@@ -12,13 +12,54 @@ const pgClient = new pg.Client(DB_BACKEND);
 pgClient.connect();
 
 
+app.post('/app/admin/add-user', authMiddleware, async (req, res) => {
+    const { name, email, password, address, role } = req.body;
+    //@ts-ignore
+    if (req.user.role !== 'admin') {
+        res.json({
+            error: "Access Denied"
+        })
+    }
+
+    if (!['user', 'owner', 'admin'].includes(role)) {
+        res.json({
+            error: "Invalid role"
+        })
+    }
+
+    const hash = bcrypt.hash(password, 10);
+    const InsertQuery = `INSERT INTO users (name, email, password, address, role) VALUES ($1,$2,$3,$4,$5)`
+    const response = await pgClient.query(InsertQuery, [name, email, hash, password, address, role])
+
+    res.json({
+        message: `${role} user added successfully`,
+        user: response.rows[0]
+    })
+
+})
+
+app.post('/app/admin/add-store', authMiddleware, async (req, res) => {
+
+    const { name, email, address, owner_id } = req.body;
+
+    const InsertQuery = `INSERT INTO stores (name, email, address, owner_id) VALUES($1, $2, $3, $4)`;
+    const response = await pgClient.query(InsertQuery, [name, email, address, owner_id]);
+
+    res.json({
+        message: "Store created Successfully",
+        response: response.rows[0]
+    })
+
+})
+
+
 app.post('/app/user/signup', async (req, res) => {
 
-    const { name, email, password, address } = req.body;
-    const role = 'user'
+    const { name, email, password, address, role } = req.body;
+    const userRole = ['user', 'owner'].includes(role) ? role : 'user';
     const hash = await bcrypt.hash(password, 10);
     const InsertQuery = `INSERT INTO users (name, email, password, address, role) VALUES($1, $2, $3, $4, $5)`
-    const response = await pgClient.query(InsertQuery, [name, email, hash, address, role])
+    const response = await pgClient.query(InsertQuery, [name, email, hash, address, userRole])
 
     res.json({
         message: "You are signup",
@@ -80,6 +121,7 @@ app.post('/app/user/password-update', authMiddleware, async (req, res) => {
     })
 
 })
+
 
 
 app.listen(3000);
