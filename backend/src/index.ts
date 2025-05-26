@@ -2,10 +2,10 @@ import pg, { Client } from "pg"
 import express from "express"
 import { DB_BACKEND } from "./database/config";
 import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken';
 import { JWT_TOKEN } from "./database/config";
+import { authMiddleware } from "./middleware/authMiddleware";
 const app = express();
-
 app.use(express.json());
 
 const pgClient = new pg.Client(DB_BACKEND);
@@ -22,7 +22,7 @@ app.post('/app/user/signup', async (req, res) => {
 
     res.json({
         message: "You are signup",
-        response: response.rows
+        response: response.rows[0]
     })
 
 })
@@ -54,6 +54,32 @@ app.post('/app/user/login', async (req, res) => {
 
 })
 
+app.post('/app/user/password-update', authMiddleware, async (req, res) => {
+
+    const { oldPassword, newPassword } = req.body;
+    //@ts-ignore
+    const userId = req.id;
+
+    const query = `SELECT password FROM users WHERE id = $1`
+    const response = await pgClient.query(query, [userId])
+    const user = response.rows[0]
+
+    if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
+        res.json({
+            error: "Old Password is incorrect"
+        })
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    const updateQuery = `UPDATE users SET password = $1 WHERE id = $2`
+    await pgClient.query(updateQuery, [newPasswordHash, userId])
+
+    res.json({
+        message: "Password updated successfully",
+        response: response.rows[0]
+    })
+
+})
 
 
 app.listen(3000);
