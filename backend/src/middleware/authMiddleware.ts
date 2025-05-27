@@ -11,8 +11,13 @@ export const authMiddleware = (req: any, res: any, next: any) => {
 
     try {
         const decode = jwt.verify(token, JWT_TOKEN)
-        //@ts-ignore
-        req.id = decode.id;
+
+        req.user = {
+            //@ts-ignore
+            id: decode.id,
+            //@ts-ignore
+            role: decode.role
+        }
         next();
     } catch (e) {
         return res.status(403).json({
