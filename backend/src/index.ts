@@ -203,7 +203,10 @@ app.post('/app/user/password-update', authMiddleware, async (req, res) => {
 
 app.post('/app/user/rating', authMiddleware, async (req, res) => {
 
-    const { user_id, store_id, rating } = req.body;
+    const { store_id, rating } = req.body;
+    //@ts-ignore
+    const user_id = req.user.id;
+
 
     const InsertQuery = `INSERT INTO ratings(user_id, store_id, rating) VALUES ($1,$2,$3) 
                         ON CONFLICT (user_id, store_id) 
@@ -219,7 +222,9 @@ app.post('/app/user/rating', authMiddleware, async (req, res) => {
 
 app.get('/app/user/allstores', authMiddleware, async (req, res) => {
     //@ts-ignore
-    const userId = req.id;
+    const userId = req.user.id;
+
+
     const ListQuery = ` SELECT s.id, s.name AS store_name,s.address,ROUND(AVG(r.rating), 2) AS overall_rating,(
                         SELECT rating FROM ratings WHERE user_id = $1 AND store_id = s.id) AS user_rating
                         FROM stores s LEFT JOIN ratings r ON s.id = r.store_id GROUP BY s.id ORDER BY s.name`
