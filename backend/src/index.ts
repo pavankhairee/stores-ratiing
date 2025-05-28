@@ -195,4 +195,13 @@ app.post('/app/user/rating', authMiddleware, async (req, res) => {
     })
 })
 
+app.get('/app/user/allstores', authMiddleware, async (req, res) => {
+
+    const storesList = await pgClient.query(`SELECT * FROM stores`)
+
+    res.json({
+        storesList: storesList.rows
+    })
+})
+
 app.listen(3000);
