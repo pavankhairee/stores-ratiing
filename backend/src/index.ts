@@ -204,4 +204,39 @@ app.get('/app/user/allstores', authMiddleware, async (req, res) => {
     })
 })
 
+app.get('/app/stores/search', async (req, res) => {
+    const { query } = req.query;
+    //@ts-ignore
+    if (!query || query.trim() === '') {
+        res.status(400).json({ error: "Search query is required" });
+    }
+    //@ts-ignore
+    const searchTerm = `%${query.toLowerCase()}%`;
+
+    try {
+        const searchQuery = `
+            SELECT 
+                s.id,
+                s.name,
+                s.address,
+                ROUND(AVG(r.rating), 2) AS overall_rating
+            FROM stores s
+            LEFT JOIN ratings r ON s.id = r.store_id
+            WHERE LOWER(s.name) ILIKE $1 OR LOWER(s.address) ILIKE $1
+            GROUP BY s.id
+        `;
+
+        const result = await pgClient.query(searchQuery, [searchTerm]);
+
+        res.json({
+            stores: result.rows
+        });
+
+    } catch (error) {
+        console.error("Search error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
 app.listen(3000);
