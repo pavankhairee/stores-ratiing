@@ -218,8 +218,13 @@ app.post('/app/user/rating', authMiddleware, async (req, res) => {
 })
 
 app.get('/app/user/allstores', authMiddleware, async (req, res) => {
+    //@ts-ignore
+    const userId = req.id;
+    const ListQuery = ` SELECT s.id, s.name AS store_name,s.address,ROUND(AVG(r.rating), 2) AS overall_rating,(
+                        SELECT rating FROM ratings WHERE user_id = $1 AND store_id = s.id) AS user_rating
+                        FROM stores s LEFT JOIN ratings r ON s.id = r.store_id GROUP BY s.id ORDER BY s.name`
 
-    const storesList = await pgClient.query(`SELECT * FROM stores`)
+    const storesList = await pgClient.query(ListQuery, [userId])
 
     res.json({
         storesList: storesList.rows

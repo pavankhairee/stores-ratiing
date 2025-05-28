@@ -2,15 +2,18 @@ import axios from "axios"
 import { useRef } from "react"
 import { Input } from "../component/Input"
 import { Button } from "../component/Buttons"
+import { useNavigate } from "react-router"
 
 
 
 export function Signup() {
 
+
     const nameRef = useRef<HTMLInputElement>(null)
     const emailRef = useRef<HTMLInputElement>(null)
     const addressRef = useRef<HTMLInputElement>(null)
     const passwordRef = useRef<HTMLInputElement>(null)
+    const navigate = useNavigate();
 
     async function signup() {
         const name = nameRef.current?.value
@@ -21,7 +24,7 @@ export function Signup() {
         const response = await axios.post("http://localhost:3000/app/user/signup", {
             name, email, address, password
         })
-
+        navigate("/login")
     }
 
 
