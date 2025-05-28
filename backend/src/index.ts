@@ -110,10 +110,40 @@ app.get('/app/admin/dashboard/users', authMiddleware, async (req, res) => {
     })
 })
 
+app.get('/app/owner/ratings', authMiddleware, async (req, res) => {
+    // @ts-ignore
+    const ownerId = req.user.id;
+
+    const query = `
+    SELECT 
+      u.name,
+      u.email,
+      u.address,
+      r.rating,
+      r.created_at
+    FROM ratings r
+    JOIN users u ON r.user_id = u.id
+    JOIN stores s ON r.store_id = s.id
+    WHERE s.owner_id = $1;
+  `;
+
+    const AvgQuery = `SELECT s.id AS store_id, s.name AS store_name, ROUND(AVG(r.rating), 2) AS average_rating,
+                      COUNT(r.id) AS total_ratings FROM stores s LEFT JOIN ratings r ON s.id = r.store_id 
+                      WHERE s.owner_id = $1 GROUP BY s.id;`
+
+    const result = await pgClient.query(query, [ownerId]);
+    const AvgQueryResult = await pgClient.query(AvgQuery, [ownerId]);
+    res.json({
+        ratings: result.rows,
+        AvgQueryResult: AvgQueryResult.rows
+    });
+});
+
+
 app.post('/app/user/signup', async (req, res) => {
 
     const { name, email, password, address } = req.body;
-    const role = 'users';
+    const role = 'user';
     const hash = await bcrypt.hash(password, 10);
     const InsertQuery = `INSERT INTO users (name, email, password, address, role) VALUES($1, $2, $3, $4, $5)`
     const response = await pgClient.query(InsertQuery, [name, email, hash, address, role])
@@ -156,7 +186,7 @@ app.post('/app/user/password-update', authMiddleware, async (req, res) => {
 
     const { oldPassword, newPassword } = req.body;
     //@ts-ignore
-    const userId = req.id;
+    const userId = req.user.id;
 
     const query = `SELECT password FROM users WHERE id = $1`
     const response = await pgClient.query(query, [userId])
@@ -173,8 +203,7 @@ app.post('/app/user/password-update', authMiddleware, async (req, res) => {
     await pgClient.query(updateQuery, [newPasswordHash, userId])
 
     res.json({
-        message: "Password updated successfully",
-        response: response.rows[0]
+        message: "Password updated successfully"
     })
 
 })
