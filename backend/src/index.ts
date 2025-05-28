@@ -114,18 +114,8 @@ app.get('/app/owner/ratings', authMiddleware, async (req, res) => {
     // @ts-ignore
     const ownerId = req.user.id;
 
-    const query = `
-    SELECT 
-      u.name,
-      u.email,
-      u.address,
-      r.rating,
-      r.created_at
-    FROM ratings r
-    JOIN users u ON r.user_id = u.id
-    JOIN stores s ON r.store_id = s.id
-    WHERE s.owner_id = $1;
-  `;
+    const query = ` SELECT  u.name, u.email, u.address, r.rating, r.created_at FROM ratings r
+                    JOIN users u ON r.user_id = u.id JOIN stores s ON r.store_id = s.id WHERE s.owner_id = $1;`;
 
     const AvgQuery = `SELECT s.id AS store_id, s.name AS store_name, ROUND(AVG(r.rating), 2) AS average_rating,
                       COUNT(r.id) AS total_ratings FROM stores s LEFT JOIN ratings r ON s.id = r.store_id 
