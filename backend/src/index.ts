@@ -1,11 +1,14 @@
 import { Client } from 'pg';
+import cors from 'cors'
 import express from "express"
 import { DB_BACKEND } from "./database/config";
 import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken';
 import { JWT_TOKEN } from "./database/config";
 import { authMiddleware } from "./middleware/authMiddleware";
+
 const app = express();
+app.use(cors())
 app.use(express.json());
 
 const pgClient = new Client(DB_BACKEND);
@@ -259,3 +262,5 @@ app.get('/app/stores/search', async (req, res) => {
 
 
 app.listen(3000);
+
+
