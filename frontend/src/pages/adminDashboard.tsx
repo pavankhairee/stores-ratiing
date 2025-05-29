@@ -37,7 +37,7 @@ export function AdminDashboard() {
         getStats()
     }, [])
 
-    const [store, setStore] = useState<Store | null>(null)
+    const [store, setStore] = useState<Store[]>([])
 
     useEffect(() => {
         async function StoreDetails() {
@@ -51,7 +51,7 @@ export function AdminDashboard() {
         StoreDetails();
     }, [])
 
-    const [users, setUsers] = useState<User | null>(null);
+    const [users, setUsers] = useState<User[]>([]);
 
     useEffect(() => {
         async function UsersDetails() {
@@ -66,8 +66,8 @@ export function AdminDashboard() {
     }, [])
 
     return (
-        <>
-            <h1>can see all stats about the store and </h1>
+        <div className="p-6 bg-gray-50 min-h-screen space-y-6">
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow">
                     <h2 className="text-xl font-semibold">Total Users</h2>
@@ -82,9 +82,35 @@ export function AdminDashboard() {
                     <p className="text-3xl mt-2">{stats?.totalRatings ?? '-'}</p>
                 </div>
             </div>
-            <p>{JSON.stringify(stats)}</p>
-            <p>{JSON.stringify(store)}</p>
-            <p>{JSON.stringify(users)}</p>
-        </>
-    )
+
+
+            <div>
+                <h2 className="text-2xl font-semibold mb-4">Stores Overview</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {store.map((store, idx) => (
+                        <div key={idx} className="bg-white border border-green-200 rounded-xl p-4 shadow">
+                            <h3 className="text-xl font-semibold text-green-700">{store.name}</h3>
+                            <p className="text-sm text-gray-600">Email: {store.email}</p>
+                            <p className="text-sm text-gray-600">Address: {store.address}</p>
+                            <p className="text-sm text-gray-800 font-medium">Rating: {store.rating ?? 'Not Rated'}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div>
+                <h2 className="text-2xl font-semibold mb-4">Users Overview</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {users.map((user, idx) => (
+                        <div key={idx} className="bg-white border border-blue-200 rounded-xl p-4 shadow">
+                            <h3 className="text-lg font-semibold text-blue-700">{user.name}</h3>
+                            <p className="text-sm text-gray-600">Email: {user.email}</p>
+                            <p className="text-sm text-gray-600">Address: {user.address}</p>
+                            <p className="text-sm text-gray-800 font-medium">Role: {user.role}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 }
