@@ -1,6 +1,7 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { Button } from "../component/Buttons";
+import { useNavigate } from "react-router";
 
 interface StoreDetails {
     id: number;
@@ -65,6 +66,7 @@ export function Home() {
         }).then(() => window.location.reload());
 
     }
+    const navigate = useNavigate()
 
     return (
         <div>
@@ -92,6 +94,10 @@ export function Home() {
                     </div>
                 ))}
             </div>
-        </div>
+            <Button onClick={() => {
+                localStorage.removeItem("token")
+                navigate("/")
+            }}>Logout</Button>
+        </div >
     );
 }
