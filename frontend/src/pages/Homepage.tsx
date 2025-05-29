@@ -1,7 +1,9 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "../component/Buttons";
 import { useNavigate } from "react-router";
+import StoreSearch from "../component/SearchBar";
+import { Input } from "../component/Input";
 
 interface StoreDetails {
     id: number;
@@ -68,36 +70,101 @@ export function Home() {
     }
     const navigate = useNavigate()
 
+    const searchRef = useRef<HTMLInputElement>(null)
+    const [search, setSearch] = useState();
+
+    const handleSearch = async () => {
+        const query = searchRef.current?.value.trim();
+
+        const response = await axios.get("http://localhost:3000/app/users/search", {
+            params: { query }, headers: {
+                Authorization: localStorage.getItem("token")
+            }
+        });
+        setSearch(response.data.stores);
+    }
+
+    useEffect(() => {
+        handleSearch()
+    }, [])
+
     return (
-        <div>
-            <div className="flex md:grid-cols-2 gap-4 p-6">
-                {store.map((s) => (
-                    <div key={s.id} className="border rounded-xl shadow p-4 bg-white w-max">
-                        <h2 className="text-xl font-semibold">{s.store_name}</h2>
-                        <p className="text-gray-600">Address: {s.address}</p>
-                        <p className="text-gray-800">Your Rating: {s.user_rating ?? 'Not Rated'}</p>
-                        <p className="text-gray-800">Avg. Rating: {s.overall_rating ?? 'No ratings yet'}</p>
-                        <div className="mt-4 space-x-2">
-                            {!s.user_rating && <Button
-                                className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-                                onClick={() => handleAddRating(s.id)}
-                            >
-                                Add Rating
-                            </Button>}
-                            {s.user_rating && <Button
-                                className="bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600"
-                                onClick={() => handleUpdateRating(s.id)}
-                            >
-                                Update Rating
-                            </Button>}
+        <div className="min-h-screen bg-gray-50">
+            <div className="p-4 flex flex-wrap gap-2 items-center">
+                <Button
+                    className="bg-red-500 text-white hover:bg-red-600"
+                    onClick={() => {
+                        localStorage.removeItem("token");
+                        navigate("/");
+                    }}
+                >
+                    Logout
+                </Button>
+
+                <Input
+                    typeField="text"
+                    refInput={searchRef}
+                    placeholder="Enter a search query"
+                    className="w-full max-w-sm"
+                />
+
+                <Button
+                    className="bg-blue-500 text-white hover:bg-blue-600"
+                    onClick={handleSearch}
+                >
+                    Search
+                </Button>
+
+                {search && (
+                    <Button
+                        className="bg-gray-500 text-white hover:bg-gray-600"
+                        onClick={() => setSearch(null)}
+                    >
+                        Back to All Stores
+                    </Button>
+                )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                {(search ?? store)?.map((s) => (
+                    <div
+                        key={s.id}
+                        className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-shadow duration-300"
+                    >
+                        <h2 className="text-2xl font-bold text-blue-800 mb-2">{s.store_name}</h2>
+                        <p className="text-gray-600 mb-1">
+                            <span className="font-semibold">Address:</span> {s.address}
+                        </p>
+                        <p className="text-gray-700 mb-1">
+                            <span className="font-semibold">Your Rating:</span> {s.user_rating ?? "Not Rated"}
+                        </p>
+                        <p className="text-gray-700 mb-3">
+                            <span className="font-semibold">Avg. Rating:</span>{" "}
+                            {s.overall_rating ?? "No ratings yet"}
+                        </p>
+
+                        <div className="flex gap-2 mt-4">
+                            {!s.user_rating ? (
+                                <Button
+                                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                                    onClick={() => handleAddRating(s.id)}
+                                >
+                                    Add Rating
+                                </Button>
+                            ) : (
+                                <Button
+                                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                                    onClick={() => handleUpdateRating(s.id)}
+                                >
+                                    Update Rating
+                                </Button>
+                            )}
                         </div>
                     </div>
                 ))}
             </div>
-            <Button onClick={() => {
-                localStorage.removeItem("token")
-                navigate("/")
-            }}>Logout</Button>
-        </div >
+        </div>
     );
+
+
 }

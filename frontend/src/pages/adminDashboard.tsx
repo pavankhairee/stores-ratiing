@@ -1,8 +1,10 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "../component/Buttons";
 import { AddStorePopup } from "../component/AddStorePop";
 import { AddUserPopup } from "../component/AddUserPopup";
+import { useNavigate } from "react-router";
+import { Input } from "../component/Input";
 
 interface DashboardCounts {
     totalUsers: number;
@@ -72,6 +74,10 @@ export function AdminDashboard() {
         fetchUsers();
     }, []);
 
+    const navigate = useNavigate();
+
+
+
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen space-y-6">
@@ -96,6 +102,10 @@ export function AdminDashboard() {
                 )}
 
                 <h1>Search and Filters</h1>
+                <Button onClick={() => {
+                    localStorage.removeItem("token")
+                    navigate("/")
+                }}>Logout</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow">

@@ -236,7 +236,8 @@ app.get('/app/user/allstores', authMiddleware, async (req, res) => {
     })
 })
 
-app.get('/app/stores/search', async (req, res) => {
+
+app.get('/app/users/search', async (req, res) => {
     const { query } = req.query;
     //@ts-ignore
     if (!query || query.trim() === '') {
