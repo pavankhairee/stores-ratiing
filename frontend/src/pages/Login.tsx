@@ -5,7 +5,7 @@ import { Button } from "../component/Buttons"
 import { useNavigate } from "react-router"
 
 
-export function Login() {   
+export function Login() {
     const emailRef = useRef<HTMLInputElement>(null)
     const passwordRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
@@ -18,8 +18,18 @@ export function Login() {
             email, password
         })
         const jwt = response.data.token;
+        const role = response.data.role;
+        console.log(role);
+
         localStorage.setItem("token", jwt)
-        navigate("/home")
+
+        if (role === 'admin') {
+            navigate('/dashboard');
+        } else if (role === 'store_owner') {
+            navigate('/ownerdash');
+        } else {
+            navigate('/home');
+        }
     }
 
 
