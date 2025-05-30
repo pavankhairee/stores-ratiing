@@ -87,7 +87,6 @@ export function AdminDashboard() {
 
 
         setSearch(response.data.stores);
-        setSearch(response.data.users);
     }
 
     useEffect(() => {
@@ -97,6 +96,7 @@ export function AdminDashboard() {
     }, []);
 
     const navigate = useNavigate();
+
 
     return (
         <div className="p-2 bg-gray-50 min-h-screen space-y-6">
@@ -126,7 +126,8 @@ export function AdminDashboard() {
 
                 {search && (
                     <Button className="bg-gray-500 text-white hover:bg-gray-600" onClick={() => setSearch(null)}>
-                        All Stores</Button>
+                        All Listings
+                    </Button>
                 )}
 
                 <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white">
@@ -141,7 +142,6 @@ export function AdminDashboard() {
                     navigate("/")
                 }}>Logout</Button>
             </div>
-
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow">
@@ -158,39 +158,52 @@ export function AdminDashboard() {
                 </div>
             </div>
 
-
-            <div className="flex flex-col lg:flex-row gap-6 px-4 py-6">
-
-                <div className="w-full lg:w-1/2">
-                    <h2 className="text-2xl font-semibold mb-4">Stores Overview</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {store.map((store, idx) => (
-                            <div key={idx} className="bg-white border border-green-200 rounded-xl p-4 shadow">
-                                <h3 className="text-xl font-semibold text-green-700">{store.name}</h3>
-                                <p className="text-sm text-gray-600">Email: {store.email}</p>
-                                <p className="text-sm text-gray-600">Address: {store.address}</p>
-                                <p className="text-sm text-gray-800 font-medium">Rating: {store.rating ?? 'Not Rated'}</p>
+            {search ? (
+                <div className="px-4 py-6">
+                    <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {search.map((item, idx) => (
+                            <div key={idx} className="bg-white border border-yellow-300 rounded-xl p-4 shadow">
+                                <h3 className="text-xl font-semibold text-yellow-700">{item.name}</h3>
+                                {item.email && <p className="text-sm text-gray-600">Email: {item.email}</p>}
+                                {item.address && <p className="text-sm text-gray-600">Address: {item.address}</p>}
+                                {item.role && <p className="text-sm text-gray-800 font-medium">Role: {item.role}</p>}
+                                {item.overall_rating && <p className="text-sm text-gray-800 font-medium">Rating: {item.overall_rating}</p>}
                             </div>
                         ))}
                     </div>
                 </div>
+            ) : (
+                <div className="flex flex-col lg:flex-row gap-6 px-4 py-6">
+                    <div className="w-full lg:w-1/2">
+                        <h2 className="text-2xl font-semibold mb-4">Stores Overview</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {store.map((store, idx) => (
+                                <div key={idx} className="bg-white border border-green-200 rounded-xl p-4 shadow">
+                                    <h3 className="text-xl font-semibold text-green-700">{store.name}</h3>
+                                    <p className="text-sm text-gray-600">Email: {store.email}</p>
+                                    <p className="text-sm text-gray-600">Address: {store.address}</p>
+                                    <p className="text-sm text-gray-800 font-medium">Rating: {store.rating ?? 'Not Rated'}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                {/* Users Overview - Right Side */}
-                <div className="w-full lg:w-1/2">
-                    <h2 className="text-2xl font-semibold mb-4">Users Overview</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {users.map((user, idx) => (
-                            <div key={idx} className="bg-white border border-blue-200 rounded-xl p-4 shadow">
-                                <h3 className="text-lg font-semibold text-blue-700">{user.name}</h3>
-                                <p className="text-sm text-gray-600">Email: {user.email}</p>
-                                <p className="text-sm text-gray-600">Address: {user.address}</p>
-                                <p className="text-sm text-gray-800 font-medium">Role: {user.role}</p>
-                            </div>
-                        ))}
+                    <div className="w-full lg:w-1/2">
+                        <h2 className="text-2xl font-semibold mb-4">Users Overview</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {users.map((user, idx) => (
+                                <div key={idx} className="bg-white border border-blue-200 rounded-xl p-4 shadow">
+                                    <h3 className="text-lg font-semibold text-blue-700">{user.name}</h3>
+                                    <p className="text-sm text-gray-600">Email: {user.email}</p>
+                                    <p className="text-sm text-gray-600">Address: {user.address}</p>
+                                    <p className="text-sm text-gray-800 font-medium">Role: {user.role}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
-
+            )}
         </div>
     );
 }

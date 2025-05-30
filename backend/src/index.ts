@@ -124,30 +124,39 @@ app.get('/app/search', authMiddleware, async (req, res) => {
     }
 
     //@ts-ignore
-    const searchTerm = `%${query.toLowerCase()}%`;
+    const rawSearchTerm = req.query.query?.toLowerCase().trim();
+    const searchTerm = `%${rawSearchTerm}%`;
 
-    try {
+    const storeSearchQuery = `
+    SELECT s.id, s.name, s.address, ROUND(AVG(r.rating), 2) AS overall_rating
+    FROM stores s
+    LEFT JOIN ratings r ON s.id = r.store_id
+    WHERE LOWER(s.name) ILIKE $1 OR LOWER(s.address) ILIKE $1
+    GROUP BY s.id
+`;
+    const storeResult = await pgClient.query(storeSearchQuery, [searchTerm]);
 
-        const storeSearchQuery = `
-            SELECT s.id,s.name,s.address,ROUND(AVG(r.rating), 2) AS overall_rating FROM stores s
-            LEFT JOIN ratings r ON s.id = r.store_id WHERE LOWER(s.name) ILIKE $1 OR LOWER(s.address) ILIKE $1
-            GROUP BY s.id`;
-        const storeResult = await pgClient.query(storeSearchQuery, [searchTerm]);
+    const userSearchQuery = `
+    SELECT id, name, email, address, role
+    FROM users
+    WHERE LOWER(name) ILIKE $1 OR LOWER(email) ILIKE $1 OR LOWER(address) ILIKE $1 OR LOWER(role) ILIKE $1
+`;
+    const userResult = await pgClient.query(userSearchQuery, [searchTerm]);
+
+    res.json({
+        stores: storeResult.rows,
+        users: userResult.rows,
+    });
 
 
-        const userSearchQuery = `SELECT id,name,email,address, role FROM users
-            WHERE LOWER(name) ILIKE $1 OR LOWER(email) ILIKE $1 OR LOWER(address) ILIKE $1`;
-        const userResult = await pgClient.query(userSearchQuery, [searchTerm]);
+    res.json({
+        // stores: storeResult.rows,
+        users: userResult.rows
+    });
 
-        res.json({
-            stores: storeResult.rows,
-            users: userResult.rows
-        });
 
-    } catch (error) {
-        console.error("Search error:", error);
-        res.status(500).json({ error: "Internal server error" });
-    }
+    res.status(500).json({ error: "Internal server error" });
+
 });
 
 
