@@ -37,18 +37,47 @@ export function Login() {
 
     return (
         <>
-            <div>
-                <Input typeField={"text"} placeholder={"Enter Email"} refInput={emailRef}></Input>
-                <Input typeField={"password"} placeholder={"Enter Password"} refInput={passwordRef}></Input>
-                <Button onClick={login}>LogIn</Button>
-                <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white">
-                    Change Password
-                </Button>
-                <PasswordUpdateModal
-                    isOpen={showModal}
-                    onClose={() => setShowModal(false)}
-                />
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+                <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
+                    <h2 className="text-2xl font-bold text-center text-blue-700">Login</h2>
+
+                    <div className="space-y-4">
+                        <Input
+                            typeField="text"
+                            placeholder="Enter Email"
+                            refInput={emailRef}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+                        <Input
+                            typeField="password"
+                            placeholder="Enter Password"
+                            refInput={passwordRef}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <Button
+                            onClick={login}
+                            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                        >
+                            Log In
+                        </Button>
+                        <Button
+                            onClick={() => setShowModal(true)}
+                            className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition"
+                        >
+                            Change Password
+                        </Button>
+                    </div>
+                </div>
             </div>
+
+            <PasswordUpdateModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+            />
         </>
+
     )
 }
