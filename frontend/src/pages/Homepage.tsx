@@ -4,6 +4,7 @@ import { Button } from "../component/Buttons";
 import { useNavigate } from "react-router";
 import StoreSearch from "../component/SearchBar";
 import { Input } from "../component/Input";
+import PasswordUpdateModal from "../component/UpdatePassword";
 
 interface StoreDetails {
     id: number;
@@ -15,6 +16,7 @@ interface StoreDetails {
 
 export function Home() {
     const [store, setStore] = useState<StoreDetails[]>([])
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         async function getDetails() {
@@ -76,7 +78,7 @@ export function Home() {
     const handleSearch = async () => {
         const query = searchRef.current?.value.trim();
 
-        const response = await axios.get("http://localhost:3000/app/users/search", {
+        const response = await axios.get("http://localhost:3000/app/search", {
             params: { query }, headers: {
                 Authorization: localStorage.getItem("token")
             }
@@ -123,6 +125,15 @@ export function Home() {
                         Back to All Stores
                     </Button>
                 )}
+
+                <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white">
+                    Change Password
+                </Button>
+                <PasswordUpdateModal
+                    isOpen={showModal}
+                    onClose={() => setShowModal(false)}
+                />
+
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">

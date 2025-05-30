@@ -1,13 +1,15 @@
 import axios from "axios"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { Input } from "../component/Input"
 import { Button } from "../component/Buttons"
 import { useNavigate } from "react-router"
+import PasswordUpdateModal from "../component/UpdatePassword"
 
 
 export function Login() {
     const emailRef = useRef<HTMLInputElement>(null)
     const passwordRef = useRef<HTMLInputElement>(null)
+    const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate()
 
     async function login() {
@@ -39,6 +41,13 @@ export function Login() {
                 <Input typeField={"text"} placeholder={"Enter Email"} refInput={emailRef}></Input>
                 <Input typeField={"password"} placeholder={"Enter Password"} refInput={passwordRef}></Input>
                 <Button onClick={login}>LogIn</Button>
+                <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white">
+                    Change Password
+                </Button>
+                <PasswordUpdateModal
+                    isOpen={showModal}
+                    onClose={() => setShowModal(false)}
+                />
             </div>
         </>
     )

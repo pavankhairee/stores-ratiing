@@ -3,8 +3,8 @@ import './App.css'
 import { Signup } from './pages/Signup'
 import { Login } from './pages/Login'
 import { Home } from './pages/Homepage'
-import { AdminDashboard } from './pages/adminDashboard'
-import { OwnerDashboard } from './pages/ownerdashboard'
+import { AdminDashboard } from './pages/AdminDashboard'
+import { OwnerDashboard } from './pages/Ownerdashboard'
 
 function App() {
 

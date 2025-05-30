@@ -5,6 +5,7 @@ import { AddStorePopup } from "../component/AddStorePop";
 import { AddUserPopup } from "../component/AddUserPopup";
 import { useNavigate } from "react-router";
 import { Input } from "../component/Input";
+import PasswordUpdateModal from "../component/UpdatePassword";
 
 interface DashboardCounts {
     totalUsers: number;
@@ -29,6 +30,8 @@ interface User {
 export function AdminDashboard() {
     const [showPopup, setShowPopup] = useState(false)
     const [showUserPopup, setShowUserPopup] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+
 
     const [stats, setStats] = useState<DashboardCounts | null>(null);
 
@@ -69,20 +72,36 @@ export function AdminDashboard() {
         }
     };
 
+
+    const searchRef = useRef<HTMLInputElement>(null)
+    const [search, setSearch] = useState();
+
+    const handleSearch = async () => {
+        const query = searchRef.current?.value.trim();
+
+        const response = await axios.get("http://localhost:3000/app/search", {
+            params: { query }, headers: {
+                Authorization: localStorage.getItem("token")
+            }
+        });
+
+
+        setSearch(response.data.stores);
+        setSearch(response.data.users);
+    }
+
     useEffect(() => {
         fetchStores();
         fetchUsers();
+        handleSearch();
     }, []);
 
     const navigate = useNavigate();
 
-
-
-
     return (
-        <div className="p-6 bg-gray-50 min-h-screen space-y-6">
+        <div className="p-2 bg-gray-50 min-h-screen space-y-6">
 
-            <div className="flex gap-4">
+            <div className="p-4 flex flex-wrap gap-2 items-center">
                 <Button onClick={() => setShowUserPopup(true)}>Add User</Button>
 
                 {showUserPopup && (
@@ -101,12 +120,29 @@ export function AdminDashboard() {
                     />
                 )}
 
-                <h1>Search and Filters</h1>
+                <Input typeField="text" refInput={searchRef} placeholder="Enter a search query" />
+
+                <Button className="bg-blue-500 text-white hover:bg-blue-600" onClick={handleSearch}>Search</Button>
+
+                {search && (
+                    <Button className="bg-gray-500 text-white hover:bg-gray-600" onClick={() => setSearch(null)}>
+                        All Stores</Button>
+                )}
+
+                <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white">
+                    Change Password
+                </Button>
+                <PasswordUpdateModal
+                    isOpen={showModal}
+                    onClose={() => setShowModal(false)}
+                />
                 <Button onClick={() => {
                     localStorage.removeItem("token")
                     navigate("/")
                 }}>Logout</Button>
             </div>
+
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow">
                     <h2 className="text-xl font-semibold">Total Users</h2>
@@ -124,7 +160,7 @@ export function AdminDashboard() {
 
 
             <div className="flex flex-col lg:flex-row gap-6 px-4 py-6">
-                {/* Stores Overview - Left Side */}
+
                 <div className="w-full lg:w-1/2">
                     <h2 className="text-2xl font-semibold mb-4">Stores Overview</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

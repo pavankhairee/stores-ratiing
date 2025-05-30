@@ -113,6 +113,46 @@ app.get('/app/admin/dashboard/users', authMiddleware, async (req, res) => {
     })
 })
 
+
+//@ts-ignore
+app.get('/app/search', authMiddleware, async (req, res) => {
+    const { query } = req.query;
+
+    //@ts-ignore
+    if (!query || query.trim() === '') {
+        return res.status(400).json({ error: "Search query is required" });
+    }
+
+    //@ts-ignore
+    const searchTerm = `%${query.toLowerCase()}%`;
+
+    try {
+
+        const storeSearchQuery = `
+            SELECT s.id,s.name,s.address,ROUND(AVG(r.rating), 2) AS overall_rating FROM stores s
+            LEFT JOIN ratings r ON s.id = r.store_id WHERE LOWER(s.name) ILIKE $1 OR LOWER(s.address) ILIKE $1
+            GROUP BY s.id`;
+        const storeResult = await pgClient.query(storeSearchQuery, [searchTerm]);
+
+
+        const userSearchQuery = `SELECT id,name,email,address, role FROM users
+            WHERE LOWER(name) ILIKE $1 OR LOWER(email) ILIKE $1 OR LOWER(address) ILIKE $1`;
+        const userResult = await pgClient.query(userSearchQuery, [searchTerm]);
+
+        res.json({
+            stores: storeResult.rows,
+            users: userResult.rows
+        });
+
+    } catch (error) {
+        console.error("Search error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
+
 app.get('/app/owner/ratings', authMiddleware, async (req, res) => {
     // @ts-ignore
     const ownerId = req.user.id;
@@ -174,7 +214,7 @@ app.post('/app/user/login', async (req, res) => {
     })
 
 })
-
+//@ts-ignore
 app.post('/app/user/password-update', authMiddleware, async (req, res) => {
 
     const { oldPassword, newPassword } = req.body;
@@ -186,7 +226,7 @@ app.post('/app/user/password-update', authMiddleware, async (req, res) => {
     const user = response.rows[0]
 
     if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
-        res.json({
+        return res.json({
             error: "Old Password is incorrect"
         })
     }

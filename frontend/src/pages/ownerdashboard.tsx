@@ -1,5 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Button } from "../component/Buttons";
+import PasswordUpdateModal from "../component/UpdatePassword";
+import { useNavigate } from "react-router";
 
 type StoreRating = {
     store_id: number;
@@ -32,10 +35,26 @@ export function OwnerDashboard() {
 
         getUsers();
     }, []);
+    const [showModal, setShowModal] = useState(false);
+    const navigate = useNavigate();
 
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
+            <div className="flex gap-2">
+                <Button onClick={() => {
+                    localStorage.removeItem("token")
+                    navigate("/")
+                }}>Logout</Button>
+                <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white">
+                    Change Password
+                </Button>
+                <PasswordUpdateModal
+                    isOpen={showModal}
+                    onClose={() => setShowModal(false)}
+                />
+            </div>
+
 
             {avgRating.map((store) => (
                 <div key={store.store_id} className="text-center my-6">
