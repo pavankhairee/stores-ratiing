@@ -74,20 +74,25 @@ export function AdminDashboard() {
 
 
     const searchRef = useRef<HTMLInputElement>(null)
-    const [search, setSearch] = useState();
+    const [search, setSearch] = useState<{ users: any[], stores: any[] } | null>(null);
 
     const handleSearch = async () => {
         const query = searchRef.current?.value.trim();
+        if (!query) return;
 
         const response = await axios.get("http://localhost:3000/app/search", {
-            params: { query }, headers: {
+            params: { query },
+            headers: {
                 Authorization: localStorage.getItem("token")
             }
         });
 
+        setSearch({
+            users: response.data.users || [],
+            stores: response.data.stores || [],
+        });
+    };
 
-        setSearch(response.data.stores);
-    }
 
     useEffect(() => {
         fetchStores();
@@ -103,26 +108,20 @@ export function AdminDashboard() {
 
             <div className="p-4 flex flex-wrap gap-2 items-center">
                 <Button onClick={() => setShowUserPopup(true)}>Add User</Button>
-
                 {showUserPopup && (
-                    <AddUserPopup
-                        onClose={() => setShowUserPopup(false)}
-                        onUserAdded={fetchUsers}
-                    />
+                    <AddUserPopup onClose={() => setShowUserPopup(false)} onUserAdded={fetchUsers} />
                 )}
 
                 <Button onClick={() => setShowPopup(true)}>Add Store</Button>
-
                 {showPopup && (
-                    <AddStorePopup
-                        onClose={() => setShowPopup(false)}
-                        onStoreAdded={fetchStores}
-                    />
+                    <AddStorePopup onClose={() => setShowPopup(false)} onStoreAdded={fetchStores} />
                 )}
 
                 <Input typeField="text" refInput={searchRef} placeholder="Enter a search query" />
 
-                <Button className="bg-blue-500 text-white hover:bg-blue-600" onClick={handleSearch}>Search</Button>
+                <Button className="bg-blue-500 text-white hover:bg-blue-600" onClick={handleSearch}>
+                    Search
+                </Button>
 
                 {search && (
                     <Button className="bg-gray-500 text-white hover:bg-gray-600" onClick={() => setSearch(null)}>
@@ -133,14 +132,16 @@ export function AdminDashboard() {
                 <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white">
                     Change Password
                 </Button>
-                <PasswordUpdateModal
-                    isOpen={showModal}
-                    onClose={() => setShowModal(false)}
-                />
-                <Button onClick={() => {
-                    localStorage.removeItem("token")
-                    navigate("/")
-                }}>Logout</Button>
+                <PasswordUpdateModal isOpen={showModal} onClose={() => setShowModal(false)} />
+
+                <Button
+                    onClick={() => {
+                        localStorage.removeItem("token");
+                        navigate("/");
+                    }}
+                >
+                    Logout
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -158,23 +159,51 @@ export function AdminDashboard() {
                 </div>
             </div>
 
+
             {search ? (
                 <div className="px-4 py-6">
                     <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {search.map((item, idx) => (
-                            <div key={idx} className="bg-white border border-yellow-300 rounded-xl p-4 shadow">
-                                <h3 className="text-xl font-semibold text-yellow-700">{item.name}</h3>
-                                {item.email && <p className="text-sm text-gray-600">Email: {item.email}</p>}
-                                {item.address && <p className="text-sm text-gray-600">Address: {item.address}</p>}
-                                {item.role && <p className="text-sm text-gray-800 font-medium">Role: {item.role}</p>}
-                                {item.overall_rating && <p className="text-sm text-gray-800 font-medium">Rating: {item.overall_rating}</p>}
+
+
+                    {search.stores.length > 0 && (
+                        <>
+                            <h3 className="text-xl font-semibold text-green-700 mb-2">Stores</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                {search.stores.map((store, idx) => (
+                                    <div key={idx} className="bg-white border border-green-300 rounded-xl p-4 shadow">
+                                        <h4 className="text-lg font-semibold">{store.name}</h4>
+                                        <p className="text-sm text-gray-600">Address: {store.address}</p>
+                                        <p className="text-sm text-gray-800 font-medium">Rating: {store.overall_rating ?? 'Not Rated'}</p>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </>
+                    )}
+
+                    {search.users.length > 0 && (
+                        <>
+                            <h3 className="text-xl font-semibold text-blue-700 mb-2">Users</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {search.users.map((user, idx) => (
+                                    <div key={idx} className="bg-white border border-blue-300 rounded-xl p-4 shadow">
+                                        <h4 className="text-lg font-semibold">{user.name}</h4>
+                                        <p className="text-sm text-gray-600">Email: {user.email}</p>
+                                        <p className="text-sm text-gray-600">Address: {user.address}</p>
+                                        <p className="text-sm text-gray-800 font-medium">Role: {user.role}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {search.users.length === 0 && search.stores.length === 0 && (
+                        <p className="text-gray-600">No matching users or stores found.</p>
+                    )}
                 </div>
             ) : (
+
                 <div className="flex flex-col lg:flex-row gap-6 px-4 py-6">
+
                     <div className="w-full lg:w-1/2">
                         <h2 className="text-2xl font-semibold mb-4">Stores Overview</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -188,6 +217,7 @@ export function AdminDashboard() {
                             ))}
                         </div>
                     </div>
+
 
                     <div className="w-full lg:w-1/2">
                         <h2 className="text-2xl font-semibold mb-4">Users Overview</h2>
@@ -206,6 +236,7 @@ export function AdminDashboard() {
             )}
         </div>
     );
+
 }
 
 
